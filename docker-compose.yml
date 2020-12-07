@@ -1,0 +1,21 @@
+version: "3.8"
+services:
+  postgesql:
+    image: postgres:12-alpine
+    container_name: api_postgesql
+    ports:
+      - "5432:5432"
+    restart: always
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=eats_db
+    volumes:
+      - ./pgdata:/var/lib/postgresql/data
+    networks:
+      - web_api
+
+
+networks:
+  web_api:
+    driver: bridge
