@@ -35,3 +35,4 @@ lerna-debug.log*
 ./pgdata
 
 pgdata
+.prod.env
