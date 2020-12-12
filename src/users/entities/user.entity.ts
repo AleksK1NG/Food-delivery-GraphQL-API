@@ -3,6 +3,7 @@ import { IsEmail, IsString } from 'class-validator';
 import { CoreEntity } from '../../common/entities/core.entity';
 import { Field, InputType, ObjectType, registerEnumType } from '@nestjs/graphql';
 import * as bcrypt from 'bcrypt';
+import { Exclude } from 'class-transformer';
 
 enum UserRole {
   Owner,
@@ -23,6 +24,7 @@ export class User extends CoreEntity {
   email: string;
 
   @Column()
+  @Exclude()
   @Field(() => String)
   password: string;
 
@@ -33,5 +35,9 @@ export class User extends CoreEntity {
   @BeforeInsert()
   async hashPassword(): Promise<void> {
     this.password = await bcrypt.hash(this.password, 10);
+  }
+
+  async checkPassword(password: string): Promise<boolean> {
+    return bcrypt.compare(password, this.password);
   }
 }
