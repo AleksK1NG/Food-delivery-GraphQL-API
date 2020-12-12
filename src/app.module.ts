@@ -34,8 +34,8 @@ import { Restaurant } from './restaurants/entities/restaurant.entity';
       entities: [Restaurant],
     }),
     GraphQLModule.forRoot({
-      debug: true,
-      playground: true,
+      // debug: true,
+      // playground: true,
       // autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
       autoSchemaFile: true,
     }),
