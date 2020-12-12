@@ -4,10 +4,15 @@ import { User } from './entities/user.entity';
 import { Repository } from 'typeorm';
 import { CreateAccountInput, CreateAccountOutput } from './dto/createAccount.dto';
 import { LoginInput, LoginOutput } from './dto/login.dto';
+import * as jwt from 'jsonwebtoken';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class UsersService {
-  constructor(@InjectRepository(User) private readonly usersRepository: Repository<User>) {}
+  constructor(
+    @InjectRepository(User) private readonly usersRepository: Repository<User>,
+    private readonly configService: ConfigService,
+  ) {}
 
   async createAccount(createAccountInput: CreateAccountInput): Promise<CreateAccountOutput> {
     const { email } = createAccountInput;
@@ -26,6 +31,8 @@ export class UsersService {
     const isPasswordValid = await user.checkPassword(password);
     if (!isPasswordValid) throw new UnauthorizedException('Invalid email or password');
 
-    return { ok: true, token: 'adasdsadads' };
+    const token = jwt.sign({ id: user.id, email: user.email }, this.configService.get<string>('JWT_SECRET'));
+
+    return { ok: true, token: token };
   }
 }

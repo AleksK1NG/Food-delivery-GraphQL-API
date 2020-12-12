@@ -22,6 +22,7 @@ import { User } from './users/entities/user.entity';
         DB_USERNAME: Joi.string(),
         DB_PASSWORD: Joi.string(),
         DB_NAME: Joi.string(),
+        JWT_SECRET: Joi.string().required(),
       }),
     }),
 
