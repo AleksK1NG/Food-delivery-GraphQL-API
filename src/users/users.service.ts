@@ -44,10 +44,9 @@ export class UsersService {
     return this.usersRepository.findOne({ id: userId });
   }
 
-  async updateProfile(userId: number, user: EditProfileInput): Promise<UpdateResult> {
-    const result = await this.usersRepository.update({ id: userId }, { ...user });
-    if (!result.affected) throw new NotFoundException(`User with id: ${userId} not found`);
+  async updateProfile(userId: number, userInput: EditProfileInput): Promise<User> {
+    const result = await this.usersRepository.preload({ id: userId, ...userInput });
 
-    return result;
+    return this.usersRepository.save(result);
   }
 }
