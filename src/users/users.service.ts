@@ -6,9 +6,10 @@ import { CreateAccountInput, CreateAccountOutput } from './dto/create-account.dt
 import { LoginInput, LoginOutput } from './dto/login.dto';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '../jwt/jwt.service';
-import { EditProfileInput } from './dto/edit-profile.dto';
+import { EditProfileInput, EditProfileOutput } from './dto/edit-profile.dto';
 import { Verification } from './entities/verification.entity';
 import { VerifyEmailOutput } from './dto/verify-email.dto';
+import { UserProfileOutput } from './dto/user-profile.dto';
 
 @Injectable()
 export class UsersService {
@@ -48,17 +49,20 @@ export class UsersService {
   }
 
   async findById(userId: number): Promise<User> {
-    return this.usersRepository.findOne({ id: userId });
+    const user = await this.usersRepository.findOne({ id: userId });
+    if (!user) throw new NotFoundException(`user with id ${userId} not found`);
+
+    return user;
   }
 
-  async updateProfile(userId: number, userInput: EditProfileInput): Promise<User> {
+  async updateProfile(userId: number, userInput: EditProfileInput): Promise<EditProfileOutput> {
     const result = await this.usersRepository.preload({ id: userId, ...userInput });
     const user = await this.usersRepository.save(result);
 
     const verification = this.verificationRepository.create({ user });
     await this.verificationRepository.save(verification);
 
-    return user;
+    return { ok: true };
   }
 
   async verifyEmail(code: string): Promise<VerifyEmailOutput> {

@@ -1,9 +1,9 @@
-import { Args, Context, Mutation, Query, Resolver } from '@nestjs/graphql';
+import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { User } from './entities/user.entity';
 import { UsersService } from './users.service';
 import { CreateAccountInput, CreateAccountOutput } from './dto/create-account.dto';
 import { LoginInput, LoginOutput } from './dto/login.dto';
-import { NotFoundException, UseGuards } from '@nestjs/common';
+import { UseGuards } from '@nestjs/common';
 import { AuthGuard } from '../auth/guards/auth.guard';
 import { AuthUser } from '../auth/decorators/auth-user.decorator';
 import { UserProfileInput, UserProfileOutput } from './dto/user-profile.dto';
@@ -34,12 +34,7 @@ export class UsersResolver {
   @UseGuards(AuthGuard)
   async userProfile(@Args() userProfileInput: UserProfileInput): Promise<UserProfileOutput> {
     const user = await this.usersService.findById(userProfileInput.userId);
-    if (!user) throw new NotFoundException(`user with id ${userProfileInput.userId} not found`);
-
-    return {
-      ok: true,
-      user,
-    };
+    return { ok: true, user };
   }
 
   @Mutation(() => EditProfileOutput)
@@ -48,10 +43,7 @@ export class UsersResolver {
     @Args('input') editProfileInput: EditProfileInput,
     @AuthUser() user: User,
   ): Promise<EditProfileOutput> {
-    await this.usersService.updateProfile(user.id, editProfileInput);
-    return {
-      ok: true,
-    };
+    return this.usersService.updateProfile(user.id, editProfileInput);
   }
 
   @Mutation(() => VerifyEmailOutput)
