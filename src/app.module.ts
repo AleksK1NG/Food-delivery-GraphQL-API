@@ -44,6 +44,11 @@ import { JwtMiddleware } from './jwt/jwt.middleware';
       // playground: true,
       // autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
       autoSchemaFile: true,
+      context: ({ req }) => ({ user: req['user'] }),
+      // context: (ctx) => {
+      //   console.log('ctx ', ctx.req['user']);
+      //   return { ...ctx, user: ctx.req['user'] };
+      // },
     }),
     JwtModule.forRoot({
       privateKey: process.env.JWT_SECRET,
