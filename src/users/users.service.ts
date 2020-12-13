@@ -2,10 +2,13 @@ import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/co
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
 import { Repository } from 'typeorm';
-import { CreateAccountInput, CreateAccountOutput } from './dto/createAccount.dto';
+import { CreateAccountInput, CreateAccountOutput } from './dto/create-account.dto';
 import { LoginInput, LoginOutput } from './dto/login.dto';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '../jwt/jwt.service';
+import { UserProfileInput } from './dto/user-profile.dto';
+import { EditProfileInput } from './dto/edit-profile.dto';
+import { UpdateResult } from 'typeorm/query-builder/result/UpdateResult';
 
 @Injectable()
 export class UsersService {
@@ -39,5 +42,12 @@ export class UsersService {
 
   async findById(userId: number): Promise<User> {
     return this.usersRepository.findOne({ id: userId });
+  }
+
+  async updateProfile(userId: number, user: EditProfileInput): Promise<UpdateResult> {
+    const result = await this.usersRepository.update({ id: userId }, { ...user });
+    if (!result.affected) throw new NotFoundException(`User with id: ${userId} not found`);
+
+    return result;
   }
 }
