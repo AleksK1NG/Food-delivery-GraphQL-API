@@ -35,7 +35,8 @@ export class UsersService {
 
   async login(loginInput: LoginInput): Promise<LoginOutput> {
     const { email, password } = loginInput;
-    const user = await this.usersRepository.findOne({ email });
+
+    const user = await this.usersRepository.findOne({ email }, { select: ['password', 'id', 'email'] });
     if (!user) throw new NotFoundException(`User with email: ${email} not found`);
 
     const isPasswordValid = await user.checkPassword(password);
