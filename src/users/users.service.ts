@@ -9,7 +9,7 @@ import { JwtService } from '../jwt/jwt.service';
 import { EditProfileInput, EditProfileOutput } from './dto/edit-profile.dto';
 import { Verification } from './entities/verification.entity';
 import { VerifyEmailOutput } from './dto/verify-email.dto';
-import { UserProfileOutput } from './dto/user-profile.dto';
+import { MailService } from '../mail/mail.service';
 
 @Injectable()
 export class UsersService {
@@ -18,6 +18,7 @@ export class UsersService {
     @InjectRepository(Verification) private readonly verificationRepository: Repository<Verification>,
     private readonly configService: ConfigService,
     private readonly jwtService: JwtService,
+    private readonly mailService: MailService,
   ) {}
 
   async createAccount(createAccountInput: CreateAccountInput): Promise<CreateAccountOutput> {
@@ -30,6 +31,8 @@ export class UsersService {
 
     const verification = this.verificationRepository.create({ user });
     await this.verificationRepository.save(verification);
+
+    this.mailService.sendVerificationEmail(email, verification.code);
 
     return { ok: true };
   }
@@ -61,6 +64,8 @@ export class UsersService {
 
     const verification = this.verificationRepository.create({ user });
     await this.verificationRepository.save(verification);
+
+    this.mailService.sendVerificationEmail(user.email, verification.code);
 
     return { ok: true };
   }
