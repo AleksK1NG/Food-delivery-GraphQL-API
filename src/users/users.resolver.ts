@@ -3,6 +3,8 @@ import { User } from './entities/user.entity';
 import { UsersService } from './users.service';
 import { CreateAccountInput, CreateAccountOutput } from './dto/createAccount.dto';
 import { LoginInput, LoginOutput } from './dto/login.dto';
+import { UseGuards } from '@nestjs/common';
+import { AuthGuard } from '../auth/guards/auth.guard';
 
 @Resolver(() => User)
 export class UsersResolver {
@@ -19,6 +21,7 @@ export class UsersResolver {
   }
 
   @Query(() => User)
+  @UseGuards(AuthGuard)
   async me(@Context() ctx): Promise<User> {
     return ctx.req['user'];
   }
