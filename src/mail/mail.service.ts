@@ -9,10 +9,10 @@ export class MailService {
   private logger = new Logger('MailService');
   constructor(@Inject(CONFIG_OPTIONS) private readonly options: MailModuleOptions) {}
 
-  private async sendEmail(subject: string, template: string, emailVars: EmailVar[], to = 'defaultemail@gmail.com') {
+  private async sendEmail(subject: string, template: string, emailVars: EmailVar[], to = 'address@gmail.com') {
     const form = new FormData();
 
-    form.append('from', `Alex from <mailgun@${this.options.domain}>`);
+    form.append('from', `Excited User <mailgun@${this.options.domain}>`);
     form.append('to', to);
     form.append('subject', subject);
     form.append('template', template);
