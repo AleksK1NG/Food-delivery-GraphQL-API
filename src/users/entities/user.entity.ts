@@ -23,7 +23,7 @@ export class User extends CoreEntity {
   @Field(() => String)
   email: string;
 
-  @Column()
+  @Column({ select: false })
   @Exclude()
   @Field(() => String)
   password: string;
@@ -39,7 +39,9 @@ export class User extends CoreEntity {
   @BeforeInsert()
   @BeforeUpdate()
   async hashPassword(): Promise<void> {
-    this.password = await bcrypt.hash(this.password, 10);
+    if (this.password) {
+      this.password = await bcrypt.hash(this.password, 10);
+    }
   }
 
   async checkPassword(password: string): Promise<boolean> {

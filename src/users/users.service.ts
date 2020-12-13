@@ -66,6 +66,7 @@ export class UsersService {
 
     verification.user.isVerified = true;
     await this.usersRepository.save(verification.user);
+
     return { ok: true };
   }
 }
