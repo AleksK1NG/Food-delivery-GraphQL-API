@@ -6,14 +6,14 @@ import { CreateAccountInput, CreateAccountOutput } from './dto/create-account.dt
 import { LoginInput, LoginOutput } from './dto/login.dto';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '../jwt/jwt.service';
-import { UserProfileInput } from './dto/user-profile.dto';
 import { EditProfileInput } from './dto/edit-profile.dto';
-import { UpdateResult } from 'typeorm/query-builder/result/UpdateResult';
+import { Verification } from './entities/verification.entity';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User) private readonly usersRepository: Repository<User>,
+    @InjectRepository(Verification) private readonly verificationRepository: Repository<Verification>,
     private readonly configService: ConfigService,
     private readonly jwtService: JwtService,
   ) {}
@@ -23,7 +23,12 @@ export class UsersService {
     const exists = await this.usersRepository.findOne({ email });
     if (exists) throw new Error(`E-mail ${email} is already in use.`);
 
-    await this.usersRepository.create({ ...createAccountInput });
+    const user = await this.usersRepository.create({ ...createAccountInput });
+    await this.usersRepository.save(user);
+
+    const verification = this.verificationRepository.create({ user });
+    await this.verificationRepository.save(verification);
+
     return { ok: true };
   }
 
