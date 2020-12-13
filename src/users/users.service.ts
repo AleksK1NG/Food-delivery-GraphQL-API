@@ -8,6 +8,7 @@ import { ConfigService } from '@nestjs/config';
 import { JwtService } from '../jwt/jwt.service';
 import { EditProfileInput } from './dto/edit-profile.dto';
 import { Verification } from './entities/verification.entity';
+import { VerifyEmailOutput } from './dto/verify-email.dto';
 
 @Injectable()
 export class UsersService {
@@ -51,7 +52,20 @@ export class UsersService {
 
   async updateProfile(userId: number, userInput: EditProfileInput): Promise<User> {
     const result = await this.usersRepository.preload({ id: userId, ...userInput });
+    const user = await this.usersRepository.save(result);
 
-    return this.usersRepository.save(result);
+    const verification = this.verificationRepository.create({ user });
+    await this.verificationRepository.save(verification);
+
+    return user;
+  }
+
+  async verifyEmail(code: string): Promise<VerifyEmailOutput> {
+    const verification = await this.verificationRepository.findOne({ code }, { relations: ['user'] });
+    if (!verification) throw new NotFoundException(`verification with code: ${code} not found`);
+
+    verification.user.isVerified = true;
+    await this.usersRepository.save(verification.user);
+    return { ok: true };
   }
 }

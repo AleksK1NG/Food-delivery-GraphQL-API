@@ -8,6 +8,7 @@ import { AuthGuard } from '../auth/guards/auth.guard';
 import { AuthUser } from '../auth/decorators/auth-user.decorator';
 import { UserProfileInput, UserProfileOutput } from './dto/user-profile.dto';
 import { EditProfileInput, EditProfileOutput } from './dto/edit-profile.dto';
+import { VerifyEmailInput, VerifyEmailOutput } from './dto/verify-email.dto';
 
 @Resolver(() => User)
 export class UsersResolver {
@@ -51,5 +52,10 @@ export class UsersResolver {
     return {
       ok: true,
     };
+  }
+
+  @Mutation(() => VerifyEmailOutput)
+  async verifyEmail(@Args('input') verifyEmailInput: VerifyEmailInput): Promise<VerifyEmailOutput> {
+    return this.usersService.verifyEmail(verifyEmailInput.code);
   }
 }
