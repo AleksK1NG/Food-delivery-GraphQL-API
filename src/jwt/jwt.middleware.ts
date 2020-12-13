@@ -7,6 +7,7 @@ import { UsersService } from '../users/users.service';
 @Injectable()
 export class JwtMiddleware implements NestMiddleware {
   constructor(private readonly jwtService: JwtService, private readonly usersService: UsersService) {}
+
   async use(req: Request, res: Response, next: NextFunction): Promise<any> {
     const token = req.header(JWT_AUTH_HEADER);
     if (token) {
