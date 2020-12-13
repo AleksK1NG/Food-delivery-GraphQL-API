@@ -72,6 +72,8 @@ export class UsersService {
     verification.user.isVerified = true;
     await this.usersRepository.save(verification.user);
 
+    await this.verificationRepository.delete(verification.id);
+
     return { ok: true };
   }
 }
