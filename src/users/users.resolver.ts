@@ -13,7 +13,7 @@ import { EditProfileInput, EditProfileOutput } from './dto/edit-profile.dto';
 export class UsersResolver {
   constructor(private readonly usersService: UsersService) {}
 
-  @Mutation(() => User)
+  @Mutation(() => CreateAccountOutput)
   async createAccount(@Args('input') createAccountInput: CreateAccountInput): Promise<CreateAccountOutput> {
     return this.usersService.createAccount(createAccountInput);
   }
