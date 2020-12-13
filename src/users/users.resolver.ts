@@ -3,9 +3,10 @@ import { User } from './entities/user.entity';
 import { UsersService } from './users.service';
 import { CreateAccountInput, CreateAccountOutput } from './dto/createAccount.dto';
 import { LoginInput, LoginOutput } from './dto/login.dto';
-import { UseGuards } from '@nestjs/common';
+import { NotFoundException, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '../auth/guards/auth.guard';
 import { AuthUser } from '../auth/decorators/auth-user.decorator';
+import { UserProfileInput, UserProfileOutput } from './dto/user-profile.dto';
 
 @Resolver(() => User)
 export class UsersResolver {
@@ -25,5 +26,17 @@ export class UsersResolver {
   @UseGuards(AuthGuard)
   async me(@AuthUser() user: User): Promise<User> {
     return user;
+  }
+
+  @Query(() => UserProfileOutput)
+  @UseGuards(AuthGuard)
+  async userProfile(@Args() userProfileInput: UserProfileInput): Promise<UserProfileOutput> {
+    const user = await this.usersService.findById(userProfileInput.userId);
+    if (!user) throw new NotFoundException(`user with id ${userProfileInput.userId} not found`);
+
+    return {
+      ok: true,
+      user,
+    };
   }
 }
