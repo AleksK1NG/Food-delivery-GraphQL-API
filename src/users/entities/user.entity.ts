@@ -32,6 +32,10 @@ export class User extends CoreEntity {
   @Field(() => UserRole)
   role: UserRole;
 
+  @Column({ default: false })
+  @Field(() => Boolean)
+  isVerified: boolean;
+
   @BeforeInsert()
   @BeforeUpdate()
   async hashPassword(): Promise<void> {
