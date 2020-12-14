@@ -1,27 +1,37 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { Restaurant } from './entities/restaurant.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, UpdateResult } from 'typeorm';
-import { CreateRestaurantDto } from './dto/create-restaurant.dto';
-import { UpdateRestaurantDto } from './dto/update-restaurant.dto';
+import { Repository } from 'typeorm';
+import { CreateRestaurantInput, CreateRestaurantOutput } from './dto/create-restaurant.dto';
+import { User } from '../users/entities/user.entity';
+import { Category } from './entities/cetegory.entity';
 
 @Injectable()
 export class RestaurantsService {
-  private logger = new Logger('RestaurantsService');
-  constructor(@InjectRepository(Restaurant) private readonly restaurantsRepository: Repository<Restaurant>) {}
+  constructor(
+    @InjectRepository(Restaurant) private readonly restaurantsRepository: Repository<Restaurant>,
+    @InjectRepository(Category) private readonly categoriesRepository: Repository<Category>,
+  ) {}
 
   async getAll(): Promise<Restaurant[]> {
     return this.restaurantsRepository.find();
   }
 
-  async createRestaurant(createRestaurantDto: CreateRestaurantDto): Promise<Restaurant> {
-    const newRestaurant = this.restaurantsRepository.create(createRestaurantDto);
-    const created = await this.restaurantsRepository.save(newRestaurant);
-    this.logger.log(`createRestaurant: ${created.id}`);
-    return created;
-  }
+  async createRestaurant(input: CreateRestaurantInput, owner: User): Promise<CreateRestaurantOutput> {
+    const newRestaurant = this.restaurantsRepository.create(input);
 
-  async updateRestaurant({ id, data }: UpdateRestaurantDto): Promise<UpdateResult> {
-    return this.restaurantsRepository.update(id, { ...data });
+    newRestaurant.owner = owner;
+    const categoryName = input.categoryName.trim().toLowerCase();
+    const categorySlug = categoryName.replace(/ /g, '-');
+
+    const exists = await this.categoriesRepository.findOne({ slug: categorySlug });
+    if (!exists) {
+      const category = this.categoriesRepository.create({ slug: categorySlug, name: categoryName });
+      newRestaurant.category = await this.categoriesRepository.save(category);
+    }
+
+    await this.restaurantsRepository.save(newRestaurant);
+
+    return { ok: true };
   }
 }
