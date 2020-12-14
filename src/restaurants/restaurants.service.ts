@@ -8,6 +8,7 @@ import { Category } from './entities/cetegory.entity';
 import { EditRestaurantInput, EditRestaurantOutput } from './dto/edit-restaurant.dto';
 import { CategoryRepository } from './repositories/category.repository';
 import { DeleteRestaurantInput, DeleteRestaurantOutput } from './dto/delete-restaurant.dto';
+import { AllCategoriesOutput } from './dto/all-categories.dto';
 
 @Injectable()
 export class RestaurantsService {
@@ -70,5 +71,11 @@ export class RestaurantsService {
     await this.restaurantsRepository.delete(restaurantId);
 
     return { ok: true };
+  }
+
+  async allCategories(): Promise<AllCategoriesOutput> {
+    const categories = await this.categoriesRepository.find();
+
+    return { ok: true, categories };
   }
 }
