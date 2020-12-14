@@ -20,7 +20,7 @@ export class RestaurantsService {
     return this.restaurantsRepository.find();
   }
 
-  async createRestaurant(input: CreateRestaurantInput, owner: User): Promise<CreateRestaurantOutput> {
+  async createRestaurant(owner: User, input: CreateRestaurantInput): Promise<CreateRestaurantOutput> {
     const newRestaurant = this.restaurantsRepository.create(input);
 
     newRestaurant.owner = owner;
