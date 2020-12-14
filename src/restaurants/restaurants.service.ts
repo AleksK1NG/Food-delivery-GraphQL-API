@@ -7,6 +7,7 @@ import { User } from '../users/entities/user.entity';
 import { Category } from './entities/cetegory.entity';
 import { EditRestaurantInput, EditRestaurantOutput } from './dto/edit-restaurant.dto';
 import { CategoryRepository } from './repositories/category.repository';
+import { DeleteRestaurantInput, DeleteRestaurantOutput } from './dto/delete-restaurant.dto';
 
 @Injectable()
 export class RestaurantsService {
@@ -55,6 +56,18 @@ export class RestaurantsService {
         ...(category && { category }),
       },
     ]);
+
+    return { ok: true };
+  }
+
+  async deleteRestaurant(owner: User, { restaurantId }: DeleteRestaurantInput): Promise<DeleteRestaurantOutput> {
+    const restaurant = await this.restaurantsRepository.findOne({ id: restaurantId });
+    if (!restaurant) throw new NotFoundException(`restaurant with id ${restaurantId} not found`);
+
+    if (owner.id !== restaurant.owner.id)
+      throw new UnauthorizedException("can't delete a restaurant that you don't own");
+
+    await this.restaurantsRepository.delete(restaurantId);
 
     return { ok: true };
   }
