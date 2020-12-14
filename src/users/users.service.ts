@@ -4,7 +4,6 @@ import { User } from './entities/user.entity';
 import { Repository } from 'typeorm';
 import { CreateAccountInput, CreateAccountOutput } from './dto/create-account.dto';
 import { LoginInput, LoginOutput } from './dto/login.dto';
-import { ConfigService } from '@nestjs/config';
 import { JwtService } from '../jwt/jwt.service';
 import { EditProfileInput, EditProfileOutput } from './dto/edit-profile.dto';
 import { Verification } from './entities/verification.entity';
@@ -16,13 +15,13 @@ export class UsersService {
   constructor(
     @InjectRepository(User) private readonly usersRepository: Repository<User>,
     @InjectRepository(Verification) private readonly verificationRepository: Repository<Verification>,
-    private readonly configService: ConfigService,
     private readonly jwtService: JwtService,
     private readonly mailService: MailService,
   ) {}
 
   async createAccount(createAccountInput: CreateAccountInput): Promise<CreateAccountOutput> {
     const { email } = createAccountInput;
+
     const exists = await this.usersRepository.findOne({ email });
     if (exists) throw new Error(`E-mail ${email} is already in use.`);
 
