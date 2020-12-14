@@ -13,6 +13,7 @@ import { JwtMiddleware } from './jwt/jwt.middleware';
 import { AuthModule } from './auth/auth.module';
 import { Verification } from './users/entities/verification.entity';
 import { MailModule } from './mail/mail.module';
+import { Category } from './restaurants/entities/cetegory.entity';
 
 @Module({
   imports: [
@@ -43,7 +44,7 @@ import { MailModule } from './mail/mail.module';
       database: process.env.DB_NAME,
       synchronize: process.env.NODE_ENV !== 'prod',
       logging: true,
-      entities: [Restaurant, User, Verification],
+      entities: [User, Verification, Restaurant, Category],
     }),
     GraphQLModule.forRoot({
       // debug: true,
@@ -62,8 +63,8 @@ import { MailModule } from './mail/mail.module';
       domain: process.env.MAILGUN_DOMAIN_NAME,
       fromEmail: process.env.MAILGUN_FROM_EMAIL,
     }),
-    RestaurantsModule,
     UsersModule,
+    RestaurantsModule,
   ],
   controllers: [],
   providers: [],
