@@ -6,12 +6,11 @@ import * as bcrypt from 'bcrypt';
 import { Exclude } from 'class-transformer';
 import { Restaurant } from '../../restaurants/entities/restaurant.entity';
 
-enum UserRole {
-  Owner,
-  Client,
-  Delivery,
+export enum UserRole {
+  Client = 'Client',
+  Owner = 'Owner',
+  Delivery = 'Delivery',
 }
-
 registerEnumType(UserRole, { name: 'UserRole' });
 
 @InputType('UserInputType', { isAbstract: true })
