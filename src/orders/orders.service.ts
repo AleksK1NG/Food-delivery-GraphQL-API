@@ -1,6 +1,6 @@
 import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Order } from './entities/order.entity';
+import { Order, OrderStatus } from './entities/order.entity';
 import { Repository } from 'typeorm';
 import { OrderItem } from './entities/order-item.entity';
 import { Restaurant } from '../restaurants/entities/restaurant.entity';
@@ -9,6 +9,7 @@ import { User, UserRole } from '../users/entities/user.entity';
 import { CreateOrderInput, CreateOrderOutput } from './dto/create-order.dto';
 import { GetOrdersInput, GetOrdersOutput } from './dto/get-orders.dto';
 import { GetOrderInput, GetOrderOutput } from './dto/get-order.dto';
+import { EditOrderInput, EditOrderOutput } from './dto/edit-order.dto';
 
 @Injectable()
 export class OrdersService {
@@ -133,5 +134,39 @@ export class OrdersService {
     if (!this.canSeeOrder(user, order)) throw new ForbiddenException(`Forbidden`);
 
     return { ok: true, order };
+  }
+
+  async editOrder(user: User, { id: orderId, status }: EditOrderInput): Promise<EditOrderOutput> {
+    const order = await this.ordersRepository.findOne(orderId, {
+      relations: ['restaurant'],
+    });
+    if (!order) throw new NotFoundException(`order with id ${orderId} not found`);
+    if (!this.canSeeOrder(user, order)) throw new ForbiddenException(`Forbidden`);
+
+    let canEdit = true;
+    if (user.role === UserRole.Client) {
+      canEdit = false;
+    }
+    if (user.role === UserRole.Owner) {
+      if (status !== OrderStatus.Cooking && status !== OrderStatus.Cooked) {
+        canEdit = false;
+      }
+    }
+    if (user.role === UserRole.Delivery) {
+      if (status !== OrderStatus.PickedUp && status !== OrderStatus.Delivered) {
+        canEdit = false;
+      }
+    }
+
+    if (!canEdit) throw new ForbiddenException(`Forbidden`);
+
+    await this.ordersRepository.save([
+      {
+        id: orderId,
+        status,
+      },
+    ]);
+
+    return { ok: true };
   }
 }
