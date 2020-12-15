@@ -5,6 +5,7 @@ import { Field, InputType, ObjectType, registerEnumType } from '@nestjs/graphql'
 import * as bcrypt from 'bcrypt';
 import { Exclude } from 'class-transformer';
 import { Restaurant } from '../../restaurants/entities/restaurant.entity';
+import { Order } from '../../orders/entities/order.entity';
 
 export enum UserRole {
   Client = 'Client',
@@ -40,6 +41,14 @@ export class User extends CoreEntity {
   @Field(() => [Restaurant])
   @OneToMany(() => Restaurant, (restaurant) => restaurant.owner)
   restaurants: Restaurant[];
+
+  @Field(() => [Order])
+  @OneToMany(() => Order, (order) => order.customer)
+  orders: Order[];
+
+  @Field(() => [Order])
+  @OneToMany(() => Order, (order) => order.driver)
+  rides: Order[];
 
   @BeforeInsert()
   @BeforeUpdate()
