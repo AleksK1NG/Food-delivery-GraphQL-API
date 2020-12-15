@@ -4,7 +4,6 @@ import { Column, Entity, JoinTable, ManyToMany, ManyToOne, RelationId } from 'ty
 import { User } from '../../users/entities/user.entity';
 import { Restaurant } from '../../restaurants/entities/restaurant.entity';
 import { IsEnum, IsNumber } from 'class-validator';
-import { Dish } from '../../restaurants/entities/dish.entity';
 import { OrderItem } from './order-item.entity';
 
 export enum OrderStatus {
