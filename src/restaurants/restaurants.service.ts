@@ -84,10 +84,20 @@ export class RestaurantsService {
   }
 
   async findCategoryBySlug(input: CategoryInput): Promise<CategoryOutput> {
-    const { slug } = input;
-    const category = await this.categoriesRepository.findOne({ slug }, { relations: ['restaurants'] });
+    const { slug, page, size } = input;
+    const category = await this.categoriesRepository.findOne({ slug });
     if (!category) throw new NotFoundException(`category with slug ${slug} not found`);
 
-    return { ok: true, category };
+    const restaurants = await this.restaurantsRepository.find({
+      where: { category },
+      take: size,
+      skip: (page - 1) * size,
+    });
+
+    category.restaurants = restaurants;
+    const totalResults = await this.countRestaurants(category);
+    const totalPages = Math.ceil(totalResults / size);
+
+    return { ok: true, category, totalResults, totalPages };
   }
 }
