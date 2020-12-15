@@ -15,6 +15,7 @@ import { SearchRestaurantInput, SearchRestaurantOutput } from './dto/search-rest
 import { CreateDishInput, CreateDishOutput } from './dto/create-dish.dto';
 import { Dish } from './entities/dish.entity';
 import { EditDishInput, EditDishOutput } from './dto/edit-dish.dto';
+import { DeleteDishInput, DeleteDishOutput } from './dto/delete-dish.dto';
 
 @Injectable()
 export class RestaurantsService {
@@ -163,6 +164,21 @@ export class RestaurantsService {
       throw new UnauthorizedException("can't edit a restaurant that you don't own");
 
     await this.dishesRepository.save([{ id: editDishInput.dishId, ...editDishInput }]);
+
+    return { ok: true };
+  }
+
+  async deleteDish(owner: User, input: DeleteDishInput): Promise<DeleteDishOutput> {
+    const { dishId } = input;
+    const dish = await this.dishesRepository.findOne(dishId, {
+      relations: ['restaurant'],
+    });
+    if (!dish) throw new NotFoundException(`dish with id ${dishId} not found`);
+    if (dish.restaurant.ownerId !== owner.id)
+      throw new UnauthorizedException("can't edit a restaurant that you don't own");
+
+    await this.dishesRepository.delete(dishId);
+
     return { ok: true };
   }
 }
