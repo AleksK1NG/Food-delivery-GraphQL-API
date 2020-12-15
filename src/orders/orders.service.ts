@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Order } from './entities/order.entity';
 import { Repository } from 'typeorm';
@@ -8,6 +8,7 @@ import { Dish } from '../restaurants/entities/dish.entity';
 import { User, UserRole } from '../users/entities/user.entity';
 import { CreateOrderInput, CreateOrderOutput } from './dto/create-order.dto';
 import { GetOrdersInput, GetOrdersOutput } from './dto/get-orders.dto';
+import { GetOrderInput, GetOrderOutput } from './dto/get-order.dto';
 
 @Injectable()
 export class OrdersService {
@@ -123,5 +124,14 @@ export class OrdersService {
     return canSee;
   }
 
+  async getOrder(user: User, input: GetOrderInput): Promise<GetOrderOutput> {
+    const { id: orderId } = input;
+    const order = await this.ordersRepository.findOne(orderId, {
+      relations: ['restaurant'],
+    });
+    if (!order) throw new NotFoundException(`order with id ${orderId} not found`);
+    if (!this.canSeeOrder(user, order)) throw new ForbiddenException(`Forbidden`);
 
+    return { ok: true, order };
+  }
 }
