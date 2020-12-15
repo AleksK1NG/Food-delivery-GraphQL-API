@@ -14,6 +14,7 @@ import { RestaurantsInput, RestaurantsOutput } from './dto/restaurants.dto';
 import { SearchRestaurantInput, SearchRestaurantOutput } from './dto/search-restaurant.dto';
 import { CreateDishInput, CreateDishOutput } from './dto/create-dish.dto';
 import { Dish } from './entities/dish.entity';
+import { EditDishInput, EditDishOutput } from './dto/edit-dish.dto';
 
 @Injectable()
 export class RestaurantsService {
@@ -145,11 +146,23 @@ export class RestaurantsService {
   async createDish(owner: User, createDishInput: CreateDishInput): Promise<CreateDishOutput> {
     const restaurant = await this.restaurantsRepository.findOne(createDishInput.restaurantId);
     if (!restaurant) throw new NotFoundException(`restaurant with id ${createDishInput.restaurantId} not found`);
-    if (owner.id !== restaurant.owner.id) throw new UnauthorizedException("can't edit a restaurant that you don't own");
+    if (owner.id !== restaurant.ownerId) throw new UnauthorizedException("can't edit a restaurant that you don't own");
 
     const dish = this.dishesRepository.create({ ...createDishInput, restaurant });
     await this.dishesRepository.save(dish);
 
+    return { ok: true };
+  }
+
+  async editDish(owner: User, editDishInput: EditDishInput): Promise<EditDishOutput> {
+    const dish = await this.dishesRepository.findOne(editDishInput.dishId, {
+      relations: ['restaurant'],
+    });
+    if (!dish) throw new NotFoundException(`dish with id ${editDishInput.dishId} not found`);
+    if (dish.restaurant.ownerId !== owner.id)
+      throw new UnauthorizedException("can't edit a restaurant that you don't own");
+
+    await this.dishesRepository.save([{ id: editDishInput.dishId, ...editDishInput }]);
     return { ok: true };
   }
 }
