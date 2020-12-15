@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { Restaurant } from './entities/restaurant.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Raw, Repository } from 'typeorm';
 import { CreateRestaurantInput, CreateRestaurantOutput } from './dto/create-restaurant.dto';
 import { User } from '../users/entities/user.entity';
 import { Category } from './entities/cetegory.entity';
@@ -11,6 +11,7 @@ import { DeleteRestaurantInput, DeleteRestaurantOutput } from './dto/delete-rest
 import { AllCategoriesOutput } from './dto/all-categories.dto';
 import { CategoryInput, CategoryOutput } from './dto/category.dto';
 import { RestaurantsInput, RestaurantsOutput } from './dto/restaurants.dto';
+import { SearchRestaurantInput, SearchRestaurantOutput } from './dto/search-restaurant.dto';
 
 @Injectable()
 export class RestaurantsService {
@@ -115,6 +116,25 @@ export class RestaurantsService {
       results: restaurants,
       totalPages: Math.ceil(totalResults / 25),
       totalResults,
+    };
+  }
+
+  async searchRestaurantByName(input: SearchRestaurantInput): Promise<SearchRestaurantOutput> {
+    const { query, page, size } = input;
+
+    const [restaurants, totalResults] = await this.restaurantsRepository.findAndCount({
+      where: {
+        name: Raw((name) => `${name} ILIKE '%${query}%'`),
+      },
+      skip: (page - 1) * size,
+      take: size,
+    });
+
+    return {
+      ok: true,
+      restaurants,
+      totalResults,
+      totalPages: Math.ceil(totalResults / 25),
     };
   }
 }

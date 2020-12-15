@@ -8,6 +8,7 @@ import { Roles } from '../auth/decorators/role.decorator';
 import { EditRestaurantInput, EditRestaurantOutput } from './dto/edit-restaurant.dto';
 import { DeleteRestaurantInput, DeleteRestaurantOutput } from './dto/delete-restaurant.dto';
 import { RestaurantsInput, RestaurantsOutput } from './dto/restaurants.dto';
+import { SearchRestaurantInput, SearchRestaurantOutput } from './dto/search-restaurant.dto';
 
 @Resolver(() => Restaurant)
 export class RestaurantsResolver {
@@ -48,5 +49,10 @@ export class RestaurantsResolver {
   @Query(() => RestaurantsOutput)
   allRestaurants(@Args('input') restaurantsInput: RestaurantsInput): Promise<RestaurantsOutput> {
     return this.restaurantsService.allRestaurants(restaurantsInput);
+  }
+
+  @Query(() => SearchRestaurantOutput)
+  searchRestaurant(@Args('input') searchRestaurantInput: SearchRestaurantInput): Promise<SearchRestaurantOutput> {
+    return this.restaurantsService.searchRestaurantByName(searchRestaurantInput);
   }
 }
