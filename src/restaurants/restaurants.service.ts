@@ -16,6 +16,7 @@ import { CreateDishInput, CreateDishOutput } from './dto/create-dish.dto';
 import { Dish } from './entities/dish.entity';
 import { EditDishInput, EditDishOutput } from './dto/edit-dish.dto';
 import { DeleteDishInput, DeleteDishOutput } from './dto/delete-dish.dto';
+import { RestaurantInput, RestaurantOutput } from './dto/restaurant.dto';
 
 @Injectable()
 export class RestaurantsService {
@@ -123,6 +124,16 @@ export class RestaurantsService {
       totalPages: Math.ceil(totalResults / 25),
       totalResults,
     };
+  }
+
+  async findRestaurantById(input: RestaurantInput): Promise<RestaurantOutput> {
+    const { restaurantId } = input;
+
+    const restaurant = await this.restaurantsRepository.findOne(restaurantId, {
+      relations: ['menu'],
+    });
+    if (!restaurant) throw new NotFoundException(`restaurant with id ${restaurantId} not found`);
+    return { ok: true, restaurant };
   }
 
   async searchRestaurantByName(input: SearchRestaurantInput): Promise<SearchRestaurantOutput> {
