@@ -21,8 +21,7 @@ export class DishResolver {
   @Mutation(() => EditDishOutput)
   @Roles(['Owner'])
   editDish(@AuthUser() owner: User, @Args('input') editDishInput: EditDishInput): Promise<EditDishOutput> {
-    // return this.restaurantsService.editDish(owner, editDishInput);
-    return null;
+    return this.restaurantsService.editDish(owner, editDishInput);
   }
 
   @Mutation(() => DeleteDishOutput)
