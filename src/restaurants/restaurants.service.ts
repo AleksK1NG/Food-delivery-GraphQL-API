@@ -9,6 +9,7 @@ import { EditRestaurantInput, EditRestaurantOutput } from './dto/edit-restaurant
 import { CategoryRepository } from './repositories/category.repository';
 import { DeleteRestaurantInput, DeleteRestaurantOutput } from './dto/delete-restaurant.dto';
 import { AllCategoriesOutput } from './dto/all-categories.dto';
+import { CategoryInput, CategoryOutput } from './dto/category.dto';
 
 @Injectable()
 export class RestaurantsService {
@@ -75,7 +76,18 @@ export class RestaurantsService {
 
   async allCategories(): Promise<AllCategoriesOutput> {
     const categories = await this.categoriesRepository.find();
-
     return { ok: true, categories };
+  }
+
+  async countRestaurants(category: Category): Promise<number> {
+    return this.restaurantsRepository.count({ category });
+  }
+
+  async findCategoryBySlug(input: CategoryInput): Promise<CategoryOutput> {
+    const { slug } = input;
+    const category = await this.categoriesRepository.findOne({ slug }, { relations: ['restaurants'] });
+    if (!category) throw new NotFoundException(`category with slug ${slug} not found`);
+
+    return { ok: true, category };
   }
 }
