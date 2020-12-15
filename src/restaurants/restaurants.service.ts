@@ -10,6 +10,7 @@ import { CategoryRepository } from './repositories/category.repository';
 import { DeleteRestaurantInput, DeleteRestaurantOutput } from './dto/delete-restaurant.dto';
 import { AllCategoriesOutput } from './dto/all-categories.dto';
 import { CategoryInput, CategoryOutput } from './dto/category.dto';
+import { RestaurantsInput, RestaurantsOutput } from './dto/restaurants.dto';
 
 @Injectable()
 export class RestaurantsService {
@@ -99,5 +100,21 @@ export class RestaurantsService {
     const totalPages = Math.ceil(totalResults / size);
 
     return { ok: true, category, totalResults, totalPages };
+  }
+
+  async allRestaurants(input: RestaurantsInput): Promise<RestaurantsOutput> {
+    const { page, size } = input;
+
+    const [restaurants, totalResults] = await this.restaurantsRepository.findAndCount({
+      skip: (page - 1) * size,
+      take: size,
+    });
+
+    return {
+      ok: true,
+      results: restaurants,
+      totalPages: Math.ceil(totalResults / 25),
+      totalResults,
+    };
   }
 }
