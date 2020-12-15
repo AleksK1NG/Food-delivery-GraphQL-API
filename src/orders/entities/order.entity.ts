@@ -2,9 +2,9 @@ import { Field, Float, InputType, ObjectType, registerEnumType } from '@nestjs/g
 import { CoreEntity } from '../../common/entities/core.entity';
 import { Column, Entity, JoinTable, ManyToMany, ManyToOne, RelationId } from 'typeorm';
 import { User } from '../../users/entities/user.entity';
-import { Restaurant } from '../../restaurants/entities/restaurant.entity';
 import { IsEnum, IsNumber } from 'class-validator';
 import { OrderItem } from './order-item.entity';
+import { Restaurant } from '../../restaurants/entities/restaurant.entity';
 
 export enum OrderStatus {
   Pending = 'Pending',
