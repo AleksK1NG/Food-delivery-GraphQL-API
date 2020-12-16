@@ -1,4 +1,4 @@
-import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { ForbiddenException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Order, OrderStatus } from './entities/order.entity';
 import { Repository } from 'typeorm';
@@ -10,6 +10,8 @@ import { CreateOrderInput, CreateOrderOutput } from './dto/create-order.dto';
 import { GetOrdersInput, GetOrdersOutput } from './dto/get-orders.dto';
 import { GetOrderInput, GetOrderOutput } from './dto/get-order.dto';
 import { EditOrderInput, EditOrderOutput } from './dto/edit-order.dto';
+import { NEW_COOKED_ORDER, NEW_PENDING_ORDER, PUB_SUB } from '../common/common.constants';
+import { PubSub } from 'graphql-subscriptions';
 
 @Injectable()
 export class OrdersService {
@@ -22,6 +24,7 @@ export class OrdersService {
     private readonly restaurantsRepository: Repository<Restaurant>,
     @InjectRepository(Dish)
     private readonly dishesRepository: Repository<Dish>,
+    @Inject(PUB_SUB) private readonly pubSub: PubSub,
   ) {}
 
   async crateOrder(customer: User, input: CreateOrderInput): Promise<CreateOrderOutput> {
@@ -65,7 +68,7 @@ export class OrdersService {
       orderItems.push(orderItem);
     }
 
-    await this.ordersRepository.save(
+    const order = await this.ordersRepository.save(
       this.ordersRepository.create({
         customer,
         restaurant,
@@ -73,6 +76,13 @@ export class OrdersService {
         items: orderItems,
       }),
     );
+
+    await this.pubSub.publish(NEW_PENDING_ORDER, {
+      pendingOrders: {
+        order,
+        ownerId: restaurant.ownerId,
+      },
+    });
 
     return { ok: true };
   }
@@ -166,6 +176,14 @@ export class OrdersService {
         status,
       },
     ]);
+
+    if (user.role === UserRole.Owner) {
+      if (status === OrderStatus.Cooked) {
+        await this.pubSub.publish(NEW_COOKED_ORDER, {
+          cookedOrders: { ...order, status },
+        });
+      }
+    }
 
     return { ok: true };
   }
