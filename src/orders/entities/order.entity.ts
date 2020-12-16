@@ -28,18 +28,18 @@ export class Order extends CoreEntity {
   customerId: number;
 
   @Field(() => User, { nullable: true })
-  @ManyToOne(() => User, (user) => user.rides, { onDelete: 'SET NULL', nullable: true })
+  @ManyToOne(() => User, (user) => user.rides, { onDelete: 'SET NULL', nullable: true, eager: true })
   driver?: User;
 
   @RelationId((order: Order) => order.driver)
   driverId: number;
 
   @Field(() => Restaurant, { nullable: true })
-  @ManyToOne(() => Restaurant, (restaurant) => restaurant.orders, { onDelete: 'SET NULL', nullable: true })
+  @ManyToOne(() => Restaurant, (restaurant) => restaurant.orders, { onDelete: 'SET NULL', nullable: true, eager: true })
   restaurant?: Restaurant;
 
   @Field(() => [OrderItem])
-  @ManyToMany(() => OrderItem)
+  @ManyToMany(() => OrderItem, { eager: true })
   @JoinTable()
   items: OrderItem[];
 
