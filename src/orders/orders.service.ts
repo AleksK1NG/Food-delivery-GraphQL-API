@@ -1,4 +1,4 @@
-import { ForbiddenException, Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Order, OrderStatus } from './entities/order.entity';
 import { Repository } from 'typeorm';
@@ -10,8 +10,9 @@ import { CreateOrderInput, CreateOrderOutput } from './dto/create-order.dto';
 import { GetOrdersInput, GetOrdersOutput } from './dto/get-orders.dto';
 import { GetOrderInput, GetOrderOutput } from './dto/get-order.dto';
 import { EditOrderInput, EditOrderOutput } from './dto/edit-order.dto';
-import { NEW_COOKED_ORDER, NEW_PENDING_ORDER, PUB_SUB } from '../common/common.constants';
+import { NEW_COOKED_ORDER, NEW_ORDER_UPDATE, NEW_PENDING_ORDER, PUB_SUB } from '../common/common.constants';
 import { PubSub } from 'graphql-subscriptions';
+import { TakeOrderInput, TakeOrderOutput } from './dto/take-order.dto';
 
 @Injectable()
 export class OrdersService {
@@ -147,43 +148,61 @@ export class OrdersService {
   }
 
   async editOrder(user: User, { id: orderId, status }: EditOrderInput): Promise<EditOrderOutput> {
-    const order = await this.ordersRepository.findOne(orderId, {
-      relations: ['restaurant'],
-    });
-    if (!order) throw new NotFoundException(`order with id ${orderId} not found`);
-    if (!this.canSeeOrder(user, order)) throw new ForbiddenException(`Forbidden`);
+    const order = await this.ordersRepository.findOne(orderId);
+    if (!order) throw new NotFoundException('Order not found.');
+
+    if (!this.canSeeOrder(user, order)) throw new ForbiddenException("Can't see this.");
 
     let canEdit = true;
     if (user.role === UserRole.Client) {
       canEdit = false;
     }
+
     if (user.role === UserRole.Owner) {
       if (status !== OrderStatus.Cooking && status !== OrderStatus.Cooked) {
         canEdit = false;
       }
     }
+
     if (user.role === UserRole.Delivery) {
       if (status !== OrderStatus.PickedUp && status !== OrderStatus.Delivered) {
         canEdit = false;
       }
     }
 
-    if (!canEdit) throw new ForbiddenException(`Forbidden`);
+    if (!canEdit) throw new ForbiddenException("You can't do that.");
 
-    await this.ordersRepository.save([
-      {
-        id: orderId,
-        status,
-      },
-    ]);
+    await this.ordersRepository.save({
+      id: orderId,
+      status,
+    });
+
+    const newOrder = { ...order, status };
 
     if (user.role === UserRole.Owner) {
       if (status === OrderStatus.Cooked) {
         await this.pubSub.publish(NEW_COOKED_ORDER, {
-          cookedOrders: { ...order, status },
+          cookedOrders: newOrder,
         });
       }
     }
+    await this.pubSub.publish(NEW_ORDER_UPDATE, { orderUpdates: newOrder });
+
+    return { ok: true };
+  }
+
+  async takeOrder(driver: User, { id: orderId }: TakeOrderInput): Promise<TakeOrderOutput> {
+    const order = await this.ordersRepository.findOne(orderId);
+    if (!order) throw new NotFoundException('Order not found');
+
+    if (order.driver) throw new BadRequestException('This order already has a driver');
+    await this.ordersRepository.save({
+      id: orderId,
+      driver,
+    });
+    await this.pubSub.publish(NEW_ORDER_UPDATE, {
+      orderUpdates: { ...order, driver },
+    });
 
     return { ok: true };
   }
