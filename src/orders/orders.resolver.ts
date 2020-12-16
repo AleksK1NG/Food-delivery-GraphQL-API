@@ -1,4 +1,4 @@
-import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
+import { Args, Mutation, Query, Resolver, Subscription } from '@nestjs/graphql';
 import { Order } from './entities/order.entity';
 import { OrdersService } from './orders.service';
 import { CreateOrderInput, CreateOrderOutput } from './dto/create-order.dto';
@@ -8,10 +8,13 @@ import { User } from '../users/entities/user.entity';
 import { GetOrdersInput, GetOrdersOutput } from './dto/get-orders.dto';
 import { GetOrderInput, GetOrderOutput } from './dto/get-order.dto';
 import { EditOrderInput, EditOrderOutput } from './dto/edit-order.dto';
+import { Inject } from '@nestjs/common';
+import { NEW_COOKED_ORDER, NEW_PENDING_ORDER, PUB_SUB } from '../common/common.constants';
+import { PubSub } from 'graphql-subscriptions';
 
 @Resolver(() => Order)
 export class OrdersResolver {
-  constructor(private readonly ordersService: OrdersService) {}
+  constructor(private readonly ordersService: OrdersService, @Inject(PUB_SUB) private readonly pubSub: PubSub) {}
 
   @Mutation(() => CreateOrderOutput)
   @Roles(['Client'])
@@ -39,5 +42,26 @@ export class OrdersResolver {
   @Roles(['Any'])
   async editOrder(@AuthUser() user: User, @Args('input') editOrderInput: EditOrderInput): Promise<EditOrderOutput> {
     return this.ordersService.editOrder(user, editOrderInput);
+  }
+
+  @Subscription(() => Order, {
+    filter: (payload, variables, context) => {
+      const {
+        pendingOrders: { ownerId },
+      } = payload;
+      const { user } = context;
+      return ownerId === user.id;
+    },
+    resolve: ({ pendingOrders: { order } }) => order,
+  })
+  @Roles(['Owner'])
+  pendingOrders() {
+    return this.pubSub.asyncIterator(NEW_PENDING_ORDER);
+  }
+
+  @Subscription(() => Order)
+  @Roles(['Delivery'])
+  cookedOrders() {
+    return this.pubSub.asyncIterator(NEW_COOKED_ORDER);
   }
 }
