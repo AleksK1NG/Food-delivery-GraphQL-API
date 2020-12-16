@@ -6,6 +6,7 @@ import { Restaurant } from '../restaurants/entities/restaurant.entity';
 import { User } from '../users/entities/user.entity';
 import { CreatePaymentInput, CreatePaymentOutput } from './dto/create-payment.dto';
 import { GetPaymentsOutput } from './dto/get-payments.dto';
+import { Interval } from '@nestjs/schedule';
 
 @Injectable()
 export class PaymentsService {
@@ -43,6 +44,7 @@ export class PaymentsService {
     return { ok: true, payments };
   }
 
+  @Interval(5000)
   async checkPromotedRestaurants(): Promise<void> {
     const restaurants = await this.restaurantsRepository.find({
       isPromoted: true,
