@@ -32,7 +32,6 @@ export class PaymentsService {
     restaurant.isPromoted = true;
     const date = new Date();
     date.setDate(date.getDate() + 7);
-
     restaurant.promotedUntil = date;
     await this.restaurantsRepository.save(restaurant);
 
