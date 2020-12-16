@@ -1,4 +1,4 @@
-import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { ForbiddenException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Payment } from './entities/payment.entity';
 import { LessThan, Repository } from 'typeorm';
@@ -7,6 +7,8 @@ import { User } from '../users/entities/user.entity';
 import { CreatePaymentInput, CreatePaymentOutput } from './dto/create-payment.dto';
 import { GetPaymentsOutput } from './dto/get-payments.dto';
 import { Interval } from '@nestjs/schedule';
+import { PUB_SUB } from '../common/common.constants';
+import { PubSub } from 'graphql-subscriptions';
 
 @Injectable()
 export class PaymentsService {
@@ -15,6 +17,7 @@ export class PaymentsService {
     private readonly paymentsRepository: Repository<Payment>,
     @InjectRepository(Restaurant)
     private readonly restaurantsRepository: Repository<Restaurant>,
+    @Inject(PUB_SUB) private readonly pubSub: PubSub,
   ) {}
 
   async createPayment(owner: User, { transactionId, restaurantId }: CreatePaymentInput): Promise<CreatePaymentOutput> {

@@ -1,8 +1,21 @@
 import { Global, Module } from '@nestjs/common';
-import { PubSub } from 'graphql-subscriptions';
 import { PUB_SUB } from './common.constants';
+import { RedisPubSub } from 'graphql-redis-subscriptions';
+import * as Redis from 'ioredis';
 
-const pubSub = new PubSub();
+const options = {
+  host: 'localhost',
+  port: 6379,
+  retryStrategy: (times) => {
+    // reconnect after
+    return Math.min(times * 50, 2000);
+  },
+};
+
+const pubSub = new RedisPubSub({
+  publisher: new Redis(options),
+  subscriber: new Redis(options),
+});
 
 @Global()
 @Module({
