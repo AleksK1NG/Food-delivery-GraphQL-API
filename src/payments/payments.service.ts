@@ -1,10 +1,11 @@
 import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Payment } from './entities/payment.entity';
-import { Repository } from 'typeorm';
+import { LessThan, Repository } from 'typeorm';
 import { Restaurant } from '../restaurants/entities/restaurant.entity';
 import { User } from '../users/entities/user.entity';
 import { CreatePaymentInput, CreatePaymentOutput } from './dto/create-payment.dto';
+import { GetPaymentsOutput } from './dto/get-payments.dto';
 
 @Injectable()
 export class PaymentsService {
@@ -36,5 +37,25 @@ export class PaymentsService {
     await this.restaurantsRepository.save(restaurant);
 
     return { ok: true };
+  }
+
+  async getPayments(user: User): Promise<GetPaymentsOutput> {
+    const payments = await this.paymentsRepository.find({ user: user });
+    return { ok: true, payments };
+  }
+
+  async checkPromotedRestaurants(): Promise<void> {
+    const restaurants = await this.restaurantsRepository.find({
+      isPromoted: true,
+      promotedUntil: LessThan(new Date()),
+    });
+
+    await Promise.all(
+      restaurants.map(async (restaurant) => {
+        restaurant.isPromoted = false;
+        restaurant.promotedUntil = null;
+        return this.restaurantsRepository.save(restaurant);
+      }),
+    );
   }
 }
