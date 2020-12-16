@@ -4,8 +4,8 @@ import { RedisPubSub } from 'graphql-redis-subscriptions';
 import * as Redis from 'ioredis';
 
 const options = {
-  host: 'localhost',
-  port: 6379,
+  host: process.env.REDIS_HOST || 'localhost',
+  port: Number(process.env.REDIS_PORT) || 6379,
   retryStrategy: (times) => {
     // reconnect after
     return Math.min(times * 50, 2000);

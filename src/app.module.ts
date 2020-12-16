@@ -38,6 +38,8 @@ import { ScheduleModule } from '@nestjs/schedule';
         MAILGUN_API_KEY: Joi.string().required(),
         MAILGUN_DOMAIN_NAME: Joi.string().required(),
         MAILGUN_FROM_EMAIL: Joi.string().required(),
+        REDIS_HOST: Joi.string().required(),
+        REDIS_PORT: Joi.string().required(),
       }),
     }),
 
