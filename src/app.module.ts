@@ -20,6 +20,7 @@ import { OrderItem } from './orders/entities/order-item.entity';
 import { PaymentsModule } from './payments/payments.module';
 import { Payment } from './payments/entities/payment.entity';
 import { ScheduleModule } from '@nestjs/schedule';
+import { AwsModule } from './aws/aws.module';
 
 @Module({
   imports: [
@@ -40,6 +41,8 @@ import { ScheduleModule } from '@nestjs/schedule';
         MAILGUN_FROM_EMAIL: Joi.string().required(),
         REDIS_HOST: Joi.string().required(),
         REDIS_PORT: Joi.string().required(),
+        AWS_KEY: Joi.string().required(),
+        AWS_SECRET: Joi.string().required(),
       }),
     }),
 
@@ -82,6 +85,7 @@ import { ScheduleModule } from '@nestjs/schedule';
     OrdersModule,
     CommonModule,
     PaymentsModule,
+    AwsModule,
   ],
   controllers: [],
   providers: [],
