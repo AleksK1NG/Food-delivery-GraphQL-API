@@ -6,6 +6,7 @@ import * as bcrypt from 'bcrypt';
 import { Exclude } from 'class-transformer';
 import { Restaurant } from '../../restaurants/entities/restaurant.entity';
 import { Order } from '../../orders/entities/order.entity';
+import { Payment } from '../../payments/entities/payment.entity';
 
 export enum UserRole {
   Client = 'Client',
@@ -49,6 +50,10 @@ export class User extends CoreEntity {
   @Field(() => [Order])
   @OneToMany(() => Order, (order) => order.driver)
   rides: Order[];
+
+  @Field(() => [Payment])
+  @OneToMany(() => Payment, (payment) => payment.user, { eager: true })
+  payments: Payment[];
 
   @BeforeInsert()
   @BeforeUpdate()
