@@ -28,21 +28,18 @@ export class OrdersService {
     @Inject(PUB_SUB) private readonly pubSub: PubSub,
   ) {}
 
-  async crateOrder(customer: User, input: CreateOrderInput): Promise<CreateOrderOutput> {
-    const { restaurantId, items } = input;
-
+  async createOrder(customer: User, { restaurantId, items }: CreateOrderInput): Promise<CreateOrderOutput> {
     const restaurant = await this.restaurantsRepository.findOne(restaurantId);
-    if (!restaurant) throw new NotFoundException(`restaurant with id ${restaurantId} not found`);
+    if (!restaurant) throw new NotFoundException('Restaurant not found');
 
     let orderFinalPrice = 0;
     const orderItems: OrderItem[] = [];
 
     for (const item of items) {
       const dish = await this.dishesRepository.findOne(item.dishId);
-      if (!dish) throw new NotFoundException(`dish with id ${item.dishId} not found`);
+      if (!dish) throw new NotFoundException('Dish not found');
 
       let dishFinalPrice = dish.price;
-
       for (const itemOption of item.options) {
         const dishOption = dish.options.find((dishOption) => dishOption.name === itemOption.name);
 
@@ -50,9 +47,13 @@ export class OrdersService {
           if (dishOption.extra) {
             dishFinalPrice = dishFinalPrice + dishOption.extra;
           } else {
-            const dishOptionChoice = dishOption.choices.find((optionChoice) => optionChoice.name === itemOption.choice);
-            if (dishOptionChoice && dishOptionChoice.extra) {
-              dishFinalPrice = dishFinalPrice + dishOptionChoice.extra;
+            const dishOptionChoice = dishOption.choices?.find(
+              (optionChoice) => optionChoice.name === itemOption.choice,
+            );
+            if (dishOptionChoice) {
+              if (dishOptionChoice.extra) {
+                dishFinalPrice = dishFinalPrice + dishOptionChoice.extra;
+              }
             }
           }
         }
@@ -77,20 +78,13 @@ export class OrdersService {
         items: orderItems,
       }),
     );
-
     await this.pubSub.publish(NEW_PENDING_ORDER, {
-      pendingOrders: {
-        order,
-        ownerId: restaurant.ownerId,
-      },
+      pendingOrders: { order, ownerId: restaurant.ownerId },
     });
-
-    return { ok: true };
+    return { ok: true, orderId: order.id };
   }
 
-  async getOrders(user: User, input: GetOrdersInput): Promise<GetOrdersOutput> {
-    const { status } = input;
-
+  async getOrders(user: User, { status }: GetOrdersInput): Promise<GetOrdersOutput> {
     let orders: Order[];
     if (user.role === UserRole.Client) {
       orders = await this.ordersRepository.find({
