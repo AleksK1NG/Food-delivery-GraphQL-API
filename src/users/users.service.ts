@@ -66,7 +66,7 @@ export class UsersService {
 
     this.mailService.sendVerificationEmail(user.email, verification.code);
 
-    return { ok: true };
+    return { ok: true, user };
   }
 
   async verifyEmail(code: string): Promise<VerifyEmailOutput> {
