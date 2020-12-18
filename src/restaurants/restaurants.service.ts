@@ -127,7 +127,7 @@ export class RestaurantsService {
     return {
       ok: true,
       results: restaurants,
-      totalPages: Math.ceil(totalResults / 25),
+      totalPages: Math.ceil(totalResults / size),
       totalResults,
     };
   }
