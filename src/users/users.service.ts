@@ -59,12 +59,21 @@ export class UsersService {
 
   async updateProfile(userId: number, userInput: EditProfileInput): Promise<EditProfileOutput> {
     const result = await this.usersRepository.preload({ id: userId, ...userInput });
+
+    if (userInput.email) {
+      result.email = userInput.email;
+      result.isVerified = false;
+
+      await this.verificationRepository.delete({ user: { id: result.id } });
+      const verification = await this.verificationRepository.save(this.verificationRepository.create({ user: result }));
+      this.mailService.sendVerificationEmail(result.email, verification.code);
+    }
+
+    if (userInput.password) {
+      result.password = userInput.password;
+    }
+
     const user = await this.usersRepository.save(result);
-
-    const verification = this.verificationRepository.create({ user });
-    await this.verificationRepository.save(verification);
-
-    this.mailService.sendVerificationEmail(user.email, verification.code);
 
     return { ok: true, user };
   }
