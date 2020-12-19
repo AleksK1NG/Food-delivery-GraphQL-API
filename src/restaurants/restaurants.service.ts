@@ -17,6 +17,7 @@ import { Dish } from './entities/dish.entity';
 import { EditDishInput, EditDishOutput } from './dto/edit-dish.dto';
 import { DeleteDishInput, DeleteDishOutput } from './dto/delete-dish.dto';
 import { RestaurantInput, RestaurantOutput } from './dto/restaurant.dto';
+import { MyRestaurantInput, MyRestaurantOutput } from './dto/my-restaurant.dto';
 
 @Injectable()
 export class RestaurantsService {
@@ -197,5 +198,10 @@ export class RestaurantsService {
     await this.dishesRepository.delete(dishId);
 
     return { ok: true };
+  }
+
+  async myRestaurant(owner: User, { id }: MyRestaurantInput): Promise<MyRestaurantOutput> {
+    const restaurant = await this.restaurantsRepository.findOne({ owner, id }, { relations: ['menu', 'orders'] });
+    return { restaurant, ok: true };
   }
 }
