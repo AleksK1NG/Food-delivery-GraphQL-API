@@ -45,9 +45,9 @@ export class RestaurantsService {
       newRestaurant.category = await this.categoriesRepository.save(category);
     }
 
-    await this.restaurantsRepository.save(newRestaurant);
+    const restaurant = await this.restaurantsRepository.save(newRestaurant);
 
-    return { ok: true };
+    return { ok: true, restaurant };
   }
 
   async editRestaurant(owner: User, editRestaurantInput: EditRestaurantInput): Promise<EditRestaurantOutput> {
