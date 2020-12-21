@@ -61,7 +61,7 @@ export class RestaurantsService {
       category = await this.categoriesRepository.getOrCreate(editRestaurantInput.categoryName);
     }
 
-    await this.restaurantsRepository.save([
+    const updatedRestaurant = await this.restaurantsRepository.save([
       {
         id: editRestaurantInput.restaurantId,
         ...editRestaurantInput,
@@ -69,7 +69,7 @@ export class RestaurantsService {
       },
     ]);
 
-    return { ok: true };
+    return { ok: true, restaurant: { ...restaurant, ...updatedRestaurant } };
   }
 
   async deleteRestaurant(owner: User, { restaurantId }: DeleteRestaurantInput): Promise<DeleteRestaurantOutput> {
@@ -168,9 +168,9 @@ export class RestaurantsService {
     if (owner.id !== restaurant.ownerId) throw new UnauthorizedException("can't edit a restaurant that you don't own");
 
     const dish = this.dishesRepository.create({ ...createDishInput, restaurant });
-    await this.dishesRepository.save(dish);
+    const createdDish = await this.dishesRepository.save(dish);
 
-    return { ok: true };
+    return { ok: true, dish: createdDish };
   }
 
   async editDish(owner: User, editDishInput: EditDishInput): Promise<EditDishOutput> {
@@ -181,9 +181,9 @@ export class RestaurantsService {
     if (dish.restaurant.ownerId !== owner.id)
       throw new UnauthorizedException("can't edit a restaurant that you don't own");
 
-    await this.dishesRepository.save([{ id: editDishInput.dishId, ...editDishInput }]);
+    const updatedDish = await this.dishesRepository.save([{ id: editDishInput.dishId, ...editDishInput }]);
 
-    return { ok: true };
+    return { ok: true, dish: { ...dish, ...updatedDish } };
   }
 
   async deleteDish(owner: User, input: DeleteDishInput): Promise<DeleteDishOutput> {

@@ -81,7 +81,7 @@ export class OrdersService {
     await this.pubSub.publish(NEW_PENDING_ORDER, {
       pendingOrders: { order, ownerId: restaurant.ownerId },
     });
-    return { ok: true, orderId: order.id };
+    return { ok: true, orderId: order.id, order };
   }
 
   async getOrders(user: User, { status }: GetOrdersInput): Promise<GetOrdersOutput> {
@@ -182,7 +182,7 @@ export class OrdersService {
     }
     await this.pubSub.publish(NEW_ORDER_UPDATE, { orderUpdates: newOrder });
 
-    return { ok: true };
+    return { ok: true, order: { ...order, ...newOrder } };
   }
 
   async takeOrder(driver: User, { id: orderId }: TakeOrderInput): Promise<TakeOrderOutput> {
@@ -198,6 +198,6 @@ export class OrdersService {
       orderUpdates: { ...order, driver },
     });
 
-    return { ok: true };
+    return { ok: true, order };
   }
 }

@@ -9,4 +9,7 @@ export class CreateDishInput extends PickType(Dish, ['name', 'price', 'descripti
 }
 
 @ObjectType()
-export class CreateDishOutput extends CoreOutput {}
+export class CreateDishOutput extends CoreOutput {
+  @Field(() => Dish)
+  dish: Dish;
+}

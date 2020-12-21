@@ -1,6 +1,7 @@
 import { Field, InputType, Int, ObjectType } from '@nestjs/graphql';
 import { OrderItemOption } from '../entities/order-item.entity';
 import { CoreOutput } from '../../common/dto/output.dto';
+import { Order } from '../entities/order.entity';
 
 @InputType()
 class CreateOrderItemInput {
@@ -22,6 +23,8 @@ export class CreateOrderInput {
 
 @ObjectType()
 export class CreateOrderOutput extends CoreOutput {
-  @Field((type) => Int, { nullable: true })
+  @Field(() => Int, { nullable: true })
   orderId?: number;
+  @Field(() => Order, { nullable: true })
+  order?: Order;
 }

@@ -9,4 +9,7 @@ export class EditDishInput extends PickType(PartialType(Dish), ['name', 'options
 }
 
 @ObjectType()
-export class EditDishOutput extends CoreOutput {}
+export class EditDishOutput extends CoreOutput {
+  @Field(() => Dish)
+  dish: Dish;
+}
