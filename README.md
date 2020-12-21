@@ -12,7 +12,7 @@
 
 ```
 #### 👨‍💻 Full list what has been used:
-* [Nest](https://github.com/nestjs/nest) - NodeJS web framework
+* [NestJS](https://github.com/nestjs/nest) - NodeJS web framework
 * [TypeORM](https://docs.nestjs.com/recipes/hot-reload#typeorm) - NodeJS DB ORM
 * [Redis](https://redis.io/) - Redis for subscriptions.
 * [Docker](https://www.docker.com/) - Docker
